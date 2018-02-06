@@ -93,6 +93,7 @@ AS726X_NUM_CHANNELS = const(6)
 #pylint: disable=too-many-instance-attributes
 #pylint: disable=too-many-public-methods
 class Adafruit_AS726x(object):
+    """Driver for the AS726x spectral sensor."""
 
     MODE_0 = 0b00
     MODE_1 = 0b01
@@ -137,7 +138,7 @@ class Adafruit_AS726x(object):
         version = self._virtual_read(AS726X_HW_VERSION)
 
         #TODO: add support for other devices
-        if(version != 0x40):
+        if version != 0x40:
             raise ValueError("device could not be reached or this device is not supported!")
 
         self.integration_time = 140
@@ -405,6 +406,7 @@ class Adafruit_AS726x(object):
 
         # Send the data to complete the operation.
         self.__write_u8(AS726X_SLAVE_WRITE_REG, value)
+
 
 #pylint: enable=too-many-instance-attributes
 #pylint: enable=too-many-public-methods
