@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 """
-`adafruit_AS726x`
+`adafruit_as726x`
 ====================================================
 
 Driver for the AS726x spectral sensors
