@@ -36,6 +36,7 @@ __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_AS726x.git"
 import time
 from adafruit_bus_device.i2c_device import I2CDevice
 from micropython import const
+import ustruct
 
 AS726x_ADDRESS  =  const(0x49)
 
@@ -123,6 +124,8 @@ class Adafruit_AS726x(object):
 		self._driver_led_current = AS726x_LIMIT_12MA5
 		self._indicator_led_current = AS726x_LIMIT_1MA
 		self._conversion_mode = AS726x_MODE_0
+		self._integration_time = 0
+		self._gain = AS726x_GAIN_1X
 		self.buf2 = bytearray(2)
 
 		self.i2c_device = I2CDevice(i2c, address)
@@ -144,7 +147,7 @@ class Adafruit_AS726x(object):
 		
 		self.gain = AS726x_GAIN_64X
 		
-		self.conversion_mode = AS726x_ONE_SHOT
+		#self.conversion_mode = AS726x_ONE_SHOT
 		
 	@property
 	def driver_led(self):
@@ -188,7 +191,7 @@ class Adafruit_AS726x(object):
 	@driver_led_current.setter
 	def driver_led_current(self, val):
 		val = int(val)
-		assert 0 <= val <= 3
+		assert AS726x_LIMIT_12MA5 <= val <= AS726x_LIMIT_100MA
 		if self._driver_led_current == val:
 			return
 		self._driver_led_current = val
@@ -204,7 +207,7 @@ class Adafruit_AS726x(object):
 	@indicator_led_current.setter
 	def indicator_led_current(self, val):
 		val = int(val)
-		assert 0 <= val <= 3
+		assert AS726x_LIMIT_1MA <= val <= AS726x_LIMIT_8MA
 		if self._indicator_led_current == val:
 			return
 		self._indicator_led_current = val
@@ -220,7 +223,7 @@ class Adafruit_AS726x(object):
 	@conversion_mode.setter
 	def conversion_mode(self, val):
 		val = int(val)
-		assert 0 <= val <= 3
+		assert AS726x_MODE_0 <= val <= AS726x_ONE_SHOT
 		if self._conversion_mode == val:
 			return
 		self._conversion_mode = val
@@ -236,7 +239,7 @@ class Adafruit_AS726x(object):
 	@gain.setter
 	def gain(self, val):
 		val = int(val)
-		assert 0 <= val <= 3
+		assert AS726x_GAIN_1X <= val <= AS726x_GAIN_64X
 		if self._gain == val:
 			return
 		self._gain = val
@@ -257,13 +260,13 @@ class Adafruit_AS726x(object):
 		if self._integration_time == val:
 			return
 		self._integration_time = val
-		self._virtual_write(AS726X_INT_T, val/2.8)
+		self._virtual_write(AS726X_INT_T, int(val/2.8))
 		
 	def start_measurement(self):
 		"""Begin a measurement. This will set the device to One Shot mode"""
 		state = self._virtual_read(AS726X_CONTROL_SETUP)
-		state &= ~(val << 1)
-		self._virtual_write(AS726X_CONTROL_SETUP, state | (val << 1))
+		state &= ~(0x02)
+		self._virtual_write(AS726X_CONTROL_SETUP, state)
 		
 		self.conversion_mode = AS726x_ONE_SHOT
 		
@@ -277,7 +280,7 @@ class Adafruit_AS726x(object):
 		val[1] = self._virtual_read(channel + 1)
 		val[2] = self._virtual_read(channel + 2)
 		val[3] = self._virtual_read(channel + 3)
-		return struct.unpack('!f', val.decode('hex'))[0]
+		return ustruct.unpack('!f', val)[0]
 	
 	@property
 	def data_ready(self):
