@@ -38,37 +38,36 @@ from adafruit_bus_device.i2c_device import I2CDevice
 from micropython import const
 import ustruct
 
-AS726x_ADDRESS  =  const(0x49)
+AS726x_ADDRESS = const(0x49)
 
-AS726X_HW_VERSION	=	const(0x00)
-AS726X_FW_VERSION	=	const(0x02)
-AS726X_CONTROL_SETUP =	const(0x04)
-AS726X_INT_T		=	const(0x05)
-AS726X_DEVICE_TEMP	 =	const(0x06)
-AS726X_LED_CONTROL	 =	const(0x07)
+AS726X_HW_VERSION = const(0x00)
+AS726X_FW_VERSION = const(0x02)
+AS726X_CONTROL_SETUP = const(0x04)
+AS726X_INT_T = const(0x05)
+AS726X_DEVICE_TEMP = const(0x06)
+AS726X_LED_CONTROL = const(0x07)
 
 #for reading sensor data
-AS7262_V_HIGH	=		const(0x08)
-AS7262_V_LOW		=	const(0x09)
-AS7262_B_HIGH		=	const(0x0A)
-AS7262_B_LOW		=	const(0x0B)
-AS7262_G_HIGH		=	const(0x0C)
-AS7262_G_LOW		=	const(0x0D)
-AS7262_Y_HIGH		=	const(0x0E)
-AS7262_Y_LOW		=	const(0x0F)
-AS7262_O_HIGH		=	const(0x10)
-AS7262_O_LOW		=	const(0x11)
-AS7262_R_HIGH		=	const(0x12)
-AS7262_R_LOW		=	const(0x13)
+AS7262_V_HIGH = const(0x08)
+AS7262_V_LOW = const(0x09)
+AS7262_B_HIGH = const(0x0A)
+AS7262_B_LOW = const(0x0B)
+AS7262_G_HIGH = const(0x0C)
+AS7262_G_LOW = const(0x0D)
+AS7262_Y_HIGH = const(0x0E)
+AS7262_Y_LOW = const(0x0F)
+AS7262_O_HIGH = const(0x10)
+AS7262_O_LOW = const(0x11)
+AS7262_R_HIGH = const(0x12)
+AS7262_R_LOW = const(0x13)
 
-AS7262_V_CAL		=	const(0x14)
-AS7262_B_CAL		=	const(0x18)
-AS7262_G_CAL		=	const(0x1C)
-AS7262_Y_CAL		=	const(0x20)
-AS7262_O_CAL		=	const(0x24)
-AS7262_R_CAL		=	const(0x28)
+AS7262_V_CAL = const(0x14)
+AS7262_B_CAL = const(0x18)
+AS7262_G_CAL = const(0x1C)
+AS7262_Y_CAL = const(0x20)
+AS7262_O_CAL = const(0x24)
+AS7262_R_CAL = const(0x28)
 
-	
 #hardware registers
 AS726X_SLAVE_STATUS_REG = const(0x00)
 AS726X_SLAVE_WRITE_REG = const(0x01)
@@ -84,311 +83,307 @@ AS7262_ORANGE = const(0x10)
 AS7262_RED = const(0x12)
 AS7262_VIOLET_CALIBRATED = const(0x14)
 AS7262_BLUE_CALIBRATED = const(0x18)
-AS7262_GREEN_CALIBRATED =const(0x1C)
+AS7262_GREEN_CALIBRATED = const(0x1C)
 AS7262_YELLOW_CALIBRATED = const(0x20)
 AS7262_ORANGE_CALIBRATED = const(0x24)
 AS7262_RED_CALIBRATED = const(0x28)
-
-#other defs
-AS726x_MODE_0 = 0b00
-AS726x_MODE_1 = 0b01
-AS726x_MODE_2 = 0b10 #default
-AS726x_ONE_SHOT = 0b11
-
-AS726x_GAIN_1X = 0b00 #default
-AS726x_GAIN_3X7 = 0b01
-AS726x_GAIN_16X = 0b10
-AS726x_GAIN_64X = 0b11
-
-AS726x_LIMIT_1MA = 0b00 #default
-AS726x_LIMIT_2MA = 0b01
-AS726x_LIMIT_4MA = 0b10
-AS726x_LIMIT_8MA = 0b11
-
-AS726x_LIMIT_12MA5 = 0b00 #default
-AS726x_LIMIT_25MA = 0b01
-AS726x_LIMIT_50MA = 0b10
-AS726x_LIMIT_100MA = 0b11
-	
+    
 AS726x_NUM_CHANNELS = const(6)
 
 class Adafruit_AS726x(object):
-	def __init__(self, 
-				i2c, *, 
-				mode=AS726x_ONE_SHOT, 
-				address=AS726x_ADDRESS):
 
-		self._mode = mode
-		self._driver_led = False
-		self._indicator_led = False
-		self._driver_led_current = AS726x_LIMIT_12MA5
-		self._indicator_led_current = AS726x_LIMIT_1MA
-		self._conversion_mode = AS726x_MODE_0
-		self._integration_time = 0
-		self._gain = AS726x_GAIN_1X
-		self.buf2 = bytearray(2)
+    MODE_0 = 0b00
+    MODE_1 = 0b01
+    MODE_2 = 0b10 #default
+    ONE_SHOT = 0b11
 
-		self.i2c_device = I2CDevice(i2c, address)
-		
-		#reset device
-		self._virtual_write(AS726X_CONTROL_SETUP, 0x80)
-		
-		#wait for it to boot up
-		time.sleep(1)
-		
-		#try to read the version reg to make sure we can connect
-		version = self._virtual_read(AS726X_HW_VERSION)
-		
-		#TODO: add support for other devices
-		if(version != 0x40):
-			raise ValueError("device could not be reached or this device is not supported!")
-		
-		self.integration_time = 140
-		
-		self.gain = AS726x_GAIN_64X
-		
-		#self.conversion_mode = AS726x_ONE_SHOT
-		
-	@property
-	def driver_led(self):
-		"""Get and set the state of the driver LED. Boolean value that will
-		turn on the LED with a value of True and disable with a value of False.
-		"""
-		return self._driver_led
+    GAIN_1X = 0b00 #default
+    GAIN_3X7 = 0b01
+    GAIN_16X = 0b10
+    GAIN_64X = 0b11
 
-	@driver_led.setter
-	def driver_led(self, val):
-		val = bool(val)
-		if self._driver_led == val:
-			return
-		self._driver_led = val
-		enable = self._virtual_read(AS726X_LED_CONTROL)
-		enable &= ~(val << 3)
-		self._virtual_write(AS726X_LED_CONTROL, enable | (val << 3))
+    LIMIT_1MA = 0b00 #default
+    LIMIT_2MA = 0b01
+    LIMIT_4MA = 0b10
+    LIMIT_8MA = 0b11
 
-	@property
-	def indicator_led(self):
-		"""Get and set the state of the indicator LED. Boolean value that will
-		turn on the LED with a value of True and disable with a value of False.
-		"""
-		return self._indicator_led
+    LIMIT_12MA5 = 0b00 #default
+    LIMIT_25MA = 0b01
+    LIMIT_50MA = 0b10
+    LIMIT_100MA = 0b11
 
-	@indicator_led.setter
-	def indicator_led(self, val):
-		val = bool(val)
-		if self._indicator_led == val:
-			return
-		self._indicator_led = val
-		enable = self._virtual_read(AS726X_LED_CONTROL)
-		enable &= ~(val)
-		self._virtual_write(AS726X_LED_CONTROL, enable | val)
+    def __init__(self, i2c, *, address = AS726x_ADDRESS):
 
-	@property
-	def driver_led_current(self):
-		"""Get and set the current limit for the driver LED"""
-		return self._driver_led_current
+        self._driver_led = False
+        self._indicator_led = False
+        self._driver_led_current = self.LIMIT_12MA5
+        self._indicator_led_current = self.LIMIT_1MA
+        self._conversion_mode = self.MODE_0
+        self._integration_time = 0
+        self._gain = self.GAIN_1X
+        self.buf2 = bytearray(2)
 
-	@driver_led_current.setter
-	def driver_led_current(self, val):
-		val = int(val)
-		assert AS726x_LIMIT_12MA5 <= val <= AS726x_LIMIT_100MA
-		if self._driver_led_current == val:
-			return
-		self._driver_led_current = val
-		state = self._virtual_read(AS726X_LED_CONTROL)
-		state &= ~(val << 4)
-		self._virtual_write(AS726X_LED_CONTROL, state | (val << 4))
+        self.i2c_device = I2CDevice(i2c, address)
+        
+        #reset device
+        self._virtual_write(AS726X_CONTROL_SETUP, 0x80)
+        
+        #wait for it to boot up
+        time.sleep(1)
+        
+        #try to read the version reg to make sure we can connect
+        version = self._virtual_read(AS726X_HW_VERSION)
+        
+        #TODO: add support for other devices
+        if(version != 0x40):
+            raise ValueError("device could not be reached or this device is not supported!")
+        
+        self.integration_time = 140
+        
+        self.gain = self.GAIN_64X
+        
+        #self.conversion_mode = AS726x_ONE_SHOT
+        
+    @property
+    def driver_led(self):
+        """Get and set the state of the driver LED. Boolean value that will
+        turn on the LED with a value of True and disable with a value of False.
+        """
+        return self._driver_led
 
-	@property
-	def indicator_led_current(self):
-		"""Get and set the current limit for the indicator LED"""
-		return self._indicator_led_current
+    @driver_led.setter
+    def driver_led(self, val):
+        val = bool(val)
+        if self._driver_led == val:
+            return
+        self._driver_led = val
+        enable = self._virtual_read(AS726X_LED_CONTROL)
+        enable &= ~(val << 3)
+        self._virtual_write(AS726X_LED_CONTROL, enable | (val << 3))
 
-	@indicator_led_current.setter
-	def indicator_led_current(self, val):
-		val = int(val)
-		assert AS726x_LIMIT_1MA <= val <= AS726x_LIMIT_8MA
-		if self._indicator_led_current == val:
-			return
-		self._indicator_led_current = val
-		state = self._virtual_read(AS726X_LED_CONTROL)
-		state &= ~(val << 1)
-		self._virtual_write(AS726X_LED_CONTROL, state | (val << 1))
+    @property
+    def indicator_led(self):
+        """Get and set the state of the indicator LED. Boolean value that will
+        turn on the LED with a value of True and disable with a value of False.
+        """
+        return self._indicator_led
 
-	@property
-	def conversion_mode(self):
-		"""Get and set the conversion mode"""
-		return self._conversion_mode
+    @indicator_led.setter
+    def indicator_led(self, val):
+        val = bool(val)
+        if self._indicator_led == val:
+            return
+        self._indicator_led = val
+        enable = self._virtual_read(AS726X_LED_CONTROL)
+        enable &= ~(val)
+        self._virtual_write(AS726X_LED_CONTROL, enable | val)
 
-	@conversion_mode.setter
-	def conversion_mode(self, val):
-		val = int(val)
-		assert AS726x_MODE_0 <= val <= AS726x_ONE_SHOT
-		if self._conversion_mode == val:
-			return
-		self._conversion_mode = val
-		state = self._virtual_read(AS726X_CONTROL_SETUP)
-		state &= ~(val << 2)
-		self._virtual_write(AS726X_CONTROL_SETUP, state | (val << 2))
+    @property
+    def driver_led_current(self):
+        """Get and set the current limit for the driver LED"""
+        return self._driver_led_current
 
-	@property
-	def gain(self):
-		"""Get and set the gain for the sensor"""
-		return self._gain
+    @driver_led_current.setter
+    def driver_led_current(self, val):
+        val = int(val)
+        assert self.LIMIT_12MA5 <= val <= self.LIMIT_100MA
+        if self._driver_led_current == val:
+            return
+        self._driver_led_current = val
+        state = self._virtual_read(AS726X_LED_CONTROL)
+        state &= ~(val << 4)
+        self._virtual_write(AS726X_LED_CONTROL, state | (val << 4))
 
-	@gain.setter
-	def gain(self, val):
-		val = int(val)
-		assert AS726x_GAIN_1X <= val <= AS726x_GAIN_64X
-		if self._gain == val:
-			return
-		self._gain = val
-		state = self._virtual_read(AS726X_CONTROL_SETUP)
-		state &= ~(val << 4)
-		self._virtual_write(AS726X_CONTROL_SETUP, state | (val << 4))
+    @property
+    def indicator_led_current(self):
+        """Get and set the current limit for the indicator LED"""
+        return self._indicator_led_current
 
-	@property
-	def integration_time(self):
-		"""Get and set the integration time in milliseconds for the sensor"""
-		return self._integration_time
+    @indicator_led_current.setter
+    def indicator_led_current(self, val):
+        val = int(val)
+        assert self.LIMIT_1MA <= val <= self.LIMIT_8MA
+        if self._indicator_led_current == val:
+            return
+        self._indicator_led_current = val
+        state = self._virtual_read(AS726X_LED_CONTROL)
+        state &= ~(val << 1)
+        self._virtual_write(AS726X_LED_CONTROL, state | (val << 1))
 
-	@integration_time.setter
-	def integration_time(self, val):
-		"""Get and set integration time for the sensor"""
-		val = int(val)
-		assert 0 <= val <= 714
-		if self._integration_time == val:
-			return
-		self._integration_time = val
-		self._virtual_write(AS726X_INT_T, int(val/2.8))
-		
-	def start_measurement(self):
-		"""Begin a measurement. This will set the device to One Shot mode"""
-		state = self._virtual_read(AS726X_CONTROL_SETUP)
-		state &= ~(0x02)
-		self._virtual_write(AS726X_CONTROL_SETUP, state)
-		
-		self.conversion_mode = AS726x_ONE_SHOT
-		
+    @property
+    def conversion_mode(self):
+        """Get and set the conversion mode"""
+        return self._conversion_mode
 
-	def read_channel(self, channel):
-		return (self._virtual_read(channel) << 8) | self._virtual_read(channel + 1)
+    @conversion_mode.setter
+    def conversion_mode(self, val):
+        val = int(val)
+        assert self.MODE_0 <= val <= self.ONE_SHOT
+        if self._conversion_mode == val:
+            return
+        self._conversion_mode = val
+        state = self._virtual_read(AS726X_CONTROL_SETUP)
+        state &= ~(val << 2)
+        self._virtual_write(AS726X_CONTROL_SETUP, state | (val << 2))
 
-	def read_calibrated_value(self, channel):
-		val = bytearray(4)
-		val[0] = self._virtual_read(channel)
-		val[1] = self._virtual_read(channel + 1)
-		val[2] = self._virtual_read(channel + 2)
-		val[3] = self._virtual_read(channel + 3)
-		return ustruct.unpack('!f', val)[0]
-	
-	@property
-	def data_ready(self):
-		"""Returns True if the sensor has data ready to be read, False otherwise"""
-		return (self._virtual_read(AS726X_CONTROL_SETUP) >> 1) & 0x01
+    @property
+    def gain(self):
+        """Get and set the gain for the sensor"""
+        return self._gain
 
-	@property
-	def temperature(self):
-		"""Get the temperature of the device in Centigrade""" 
-		return self._virtual_read(AS726X_DEVICE_TEMP)
+    @gain.setter
+    def gain(self, val):
+        val = int(val)
+        assert self.GAIN_1X <= val <= self.GAIN_64X
+        if self._gain == val:
+            return
+        self._gain = val
+        state = self._virtual_read(AS726X_CONTROL_SETUP)
+        state &= ~(val << 4)
+        self._virtual_write(AS726X_CONTROL_SETUP, state | (val << 4))
 
-	@property
-	def violet(self):
-		return self.read_channel(AS7262_VIOLET)
+    @property
+    def integration_time(self):
+        """Get and set the integration time in milliseconds for the sensor"""
+        return self._integration_time
 
-	@property
-	def blue(self): 
-		return self.read_channel(AS7262_BLUE)
+    @integration_time.setter
+    def integration_time(self, val):
+        """Get and set integration time for the sensor"""
+        val = int(val)
+        assert 0 <= val <= 714
+        if self._integration_time == val:
+            return
+        self._integration_time = val
+        self._virtual_write(AS726X_INT_T, int(val/2.8))
+        
+    def start_measurement(self):
+        """Begin a measurement. This will set the device to One Shot mode"""
+        state = self._virtual_read(AS726X_CONTROL_SETUP)
+        state &= ~(0x02)
+        self._virtual_write(AS726X_CONTROL_SETUP, state)
+        
+        self.conversion_mode = AS726x_ONE_SHOT
+        
 
-	@property
-	def green(self): 
-		return self.read_channel(AS7262_GREEN)
+    def read_channel(self, channel):
+        return (self._virtual_read(channel) << 8) | self._virtual_read(channel + 1)
 
-	@property
-	def yellow(self): 
-		return self.read_channel(AS7262_YELLOW)
+    def read_calibrated_value(self, channel):
+        val = bytearray(4)
+        val[0] = self._virtual_read(channel)
+        val[1] = self._virtual_read(channel + 1)
+        val[2] = self._virtual_read(channel + 2)
+        val[3] = self._virtual_read(channel + 3)
+        return ustruct.unpack('!f', val)[0]
+    
+    @property
+    def data_ready(self):
+        """Returns True if the sensor has data ready to be read, False otherwise"""
+        return (self._virtual_read(AS726X_CONTROL_SETUP) >> 1) & 0x01
 
-	@property
-	def orange(self): 
-		return self.read_channel(AS7262_ORANGE)
+    @property
+    def temperature(self):
+        """Get the temperature of the device in Centigrade""" 
+        return self._virtual_read(AS726X_DEVICE_TEMP)
 
-	@property
-	def red(self): 
-		return self.read_channel(AS7262_RED)
-	
-	@property
-	def violet_calibrated(self):  
-		return self.read_calibrated_value(AS7262_VIOLET_CALIBRATED)
+    @property
+    def violet(self):
+        return self.read_channel(AS7262_VIOLET)
 
-	@property
-	def blue_calibrated(self):  
-		return self.read_calibrated_value(AS7262_BLUE_CALIBRATED)
+    @property
+    def blue(self): 
+        return self.read_channel(AS7262_BLUE)
 
-	@property
-	def green_calibrated(self):  
-		return self.read_calibrated_value(AS7262_GREEN_CALIBRATED)
+    @property
+    def green(self): 
+        return self.read_channel(AS7262_GREEN)
 
-	@property
-	def yellow_calibrated(self):  
-		return self.read_calibrated_value(AS7262_YELLOW_CALIBRATED)
+    @property
+    def yellow(self): 
+        return self.read_channel(AS7262_YELLOW)
 
-	@property
-	def orange_calibrated(self):  
-		return self.read_calibrated_value(AS7262_ORANGE_CALIBRATED)
+    @property
+    def orange(self): 
+        return self.read_channel(AS7262_ORANGE)
 
-	@property
-	def red_calibrated(self):  
-		return self.read_calibrated_value(AS7262_RED_CALIBRATED)
+    @property
+    def red(self): 
+        return self.read_channel(AS7262_RED)
+    
+    @property
+    def violet_calibrated(self):  
+        return self.read_calibrated_value(AS7262_VIOLET_CALIBRATED)
 
-	def _readU8(self, command):
-		buf = self.buf2
-		buf[0] = command
-		with self.i2c_device as i2c:
-			i2c.write(buf, end=1)
-			i2c.readinto(buf, end=1)
-		return buf[0]
+    @property
+    def blue_calibrated(self):  
+        return self.read_calibrated_value(AS7262_BLUE_CALIBRATED)
 
-	def __writeU8(self, command, abyte):
-		"""Write a command and 1 byte of data to the I2C device"""
-		buf = self.buf2
-		buf[0] = command
-		buf[1] = abyte
-		with self.i2c_device as i2c:
-			i2c.write(buf)
+    @property
+    def green_calibrated(self):  
+        return self.read_calibrated_value(AS7262_GREEN_CALIBRATED)
 
-	def _virtual_read(self, addr):
-		while (1):
-			# Read slave I2C status to see if the read buffer is ready.
-			status = self._readU8(AS726X_SLAVE_STATUS_REG)
-			if ((status & AS726X_SLAVE_TX_VALID) == 0):
-				# No inbound TX pending at slave. Okay to write now.
-				break
-		# Send the virtual register address (setting bit 7 to indicate a pending write).
-		self.__writeU8(AS726X_SLAVE_WRITE_REG, addr)
-		while (1):
-			# Read the slave I2C status to see if our read data is available.
-			status = self._readU8(AS726X_SLAVE_STATUS_REG)
-			if ((status & AS726X_SLAVE_RX_VALID) != 0):
-				# Read data is ready.
-				break
-		# Read the data to complete the operation.
-		d = self._readU8(AS726X_SLAVE_READ_REG)
-		return d
-		
+    @property
+    def yellow_calibrated(self):  
+        return self.read_calibrated_value(AS7262_YELLOW_CALIBRATED)
 
-	def _virtual_write(self, addr, value):
-		while (1):
-			# Read slave I2C status to see if the write buffer is ready.
-			status = self._readU8(AS726X_SLAVE_STATUS_REG)
-			if ((status & AS726X_SLAVE_TX_VALID) == 0):
-				break # No inbound TX pending at slave. Okay to write now.
-		# Send the virtual register address (setting bit 7 to indicate a pending write).
-		self.__writeU8(AS726X_SLAVE_WRITE_REG, (addr | 0x80))
-		while (1):
-			# Read the slave I2C status to see if the write buffer is ready.
-			status = self._readU8(AS726X_SLAVE_STATUS_REG)
-			if ((status & AS726X_SLAVE_TX_VALID) == 0):
-				break # No inbound TX pending at slave. Okay to write data now.
-			
-		# Send the data to complete the operation.
-		self.__writeU8(AS726X_SLAVE_WRITE_REG, value)
+    @property
+    def orange_calibrated(self):  
+        return self.read_calibrated_value(AS7262_ORANGE_CALIBRATED)
+
+    @property
+    def red_calibrated(self):  
+        return self.read_calibrated_value(AS7262_RED_CALIBRATED)
+
+    def _readU8(self, command):
+        buf = self.buf2
+        buf[0] = command
+        with self.i2c_device as i2c:
+            i2c.write(buf, end=1)
+            i2c.readinto(buf, end=1)
+        return buf[0]
+
+    def __writeU8(self, command, abyte):
+        """Write a command and 1 byte of data to the I2C device"""
+        buf = self.buf2
+        buf[0] = command
+        buf[1] = abyte
+        with self.i2c_device as i2c:
+            i2c.write(buf)
+
+    def _virtual_read(self, addr):
+        while 1:
+            # Read slave I2C status to see if the read buffer is ready.
+            status = self._readU8(AS726X_SLAVE_STATUS_REG)
+            if (status & AS726X_SLAVE_TX_VALID) == 0:
+                # No inbound TX pending at slave. Okay to write now.
+                break
+        # Send the virtual register address (setting bit 7 to indicate a pending write).
+        self.__writeU8(AS726X_SLAVE_WRITE_REG, addr)
+        while 1:
+            # Read the slave I2C status to see if our read data is available.
+            status = self._readU8(AS726X_SLAVE_STATUS_REG)
+            if (status & AS726X_SLAVE_RX_VALID) != 0:
+                # Read data is ready.
+                break
+        # Read the data to complete the operation.
+        d = self._readU8(AS726X_SLAVE_READ_REG)
+        return d
+        
+
+    def _virtual_write(self, addr, value):
+        while 1:
+            # Read slave I2C status to see if the write buffer is ready.
+            status = self._readU8(AS726X_SLAVE_STATUS_REG)
+            if (status & AS726X_SLAVE_TX_VALID) == 0:
+                break # No inbound TX pending at slave. Okay to write now.
+        # Send the virtual register address (setting bit 7 to indicate a pending write).
+        self.__writeU8(AS726X_SLAVE_WRITE_REG, (addr | 0x80))
+        while 1:
+            # Read the slave I2C status to see if the write buffer is ready.
+            status = self._readU8(AS726X_SLAVE_STATUS_REG)
+            if (status & AS726X_SLAVE_TX_VALID) == 0:
+                break # No inbound TX pending at slave. Okay to write data now.
+            
+        # Send the data to complete the operation.
+        self.__writeU8(AS726X_SLAVE_WRITE_REG, value)

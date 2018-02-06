@@ -3,7 +3,7 @@ import time
 import board
 import busio
 
-from adafruit_as726x import *
+from adafruit_as726x import Adafruit_AS726x
 
 #maximum value for sensor reading
 max_val = 16000
@@ -18,7 +18,7 @@ def graph_map(x):
 i2c = busio.I2C(board.SCL, board.SDA)
 sensor = Adafruit_AS726x(i2c)
 
-sensor.conversion_mode = AS726x_MODE_2
+sensor.conversion_mode = sensor.MODE_2
 
 while 1:
 	#wait for data to be ready
