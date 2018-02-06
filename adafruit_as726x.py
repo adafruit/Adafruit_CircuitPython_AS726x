@@ -23,7 +23,7 @@
 `adafruit_AS726x`
 ====================================================
 
-.. todo:: Describe what the module does
+Driver for the AS726x spectral sensor
 
 * Author(s): Dean Miller
 """
