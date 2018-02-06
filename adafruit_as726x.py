@@ -23,7 +23,7 @@
 `adafruit_AS726x`
 ====================================================
 
-Driver for the AS726x spectral sensor
+Driver for the AS726x spectral sensors
 
 * Author(s): Dean Miller
 """
