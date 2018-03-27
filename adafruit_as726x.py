@@ -124,7 +124,7 @@ class Adafruit_AS726x(object):
         self._driver_led = False
         self._indicator_led = False
         self._driver_led_current = Adafruit_AS726x.DRIVER_CURRENT_LIMITS.index(12.5)
-        self._indicator_led_current = Adafruit_AS726x.INDICATOR_CURRENT_LIMITS.index(0)
+        self._indicator_led_current = Adafruit_AS726x.INDICATOR_CURRENT_LIMITS.index(1)
         self._conversion_mode = Adafruit_AS726x.MODE_2
         self._integration_time = 0
         self._gain = Adafruit_AS726x.GAIN.index(1)
