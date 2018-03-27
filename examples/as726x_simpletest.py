@@ -20,18 +20,18 @@ sensor = Adafruit_AS726x(i2c)
 
 sensor.conversion_mode = sensor.MODE_2
 
-while 1:
-    #wait for data to be ready
+while True:
+    # Wait for data to be ready
     while not sensor.data_ready:
         time.sleep(.1)
 
     #plot plot the data
     print("\n")
-    print("V: " + graph_map(sensor.violet_calibrated)*'=')
-    print("B: " + graph_map(sensor.blue_calibrated)*'=')
-    print("G: " + graph_map(sensor.green_calibrated)*'=')
-    print("Y: " + graph_map(sensor.yellow_calibrated)*'=')
-    print("O: " + graph_map(sensor.orange_calibrated)*'=')
-    print("R: " + graph_map(sensor.red_calibrated)*'=')
+    print("V: " + graph_map(sensor.violet)*'=')
+    print("B: " + graph_map(sensor.blue)*'=')
+    print("G: " + graph_map(sensor.green)*'=')
+    print("Y: " + graph_map(sensor.yellow)*'=')
+    print("O: " + graph_map(sensor.orange)*'=')
+    print("R: " + graph_map(sensor.red)*'=')
 
     time.sleep(1)
