@@ -49,7 +49,7 @@ _AS726X_INT_T = const(0x05)
 _AS726X_DEVICE_TEMP = const(0x06)
 _AS726X_LED_CONTROL = const(0x07)
 
-#for reading sensor data
+# for reading sensor data
 _AS7262_V_HIGH = const(0x08)
 _AS7262_V_LOW = const(0x09)
 _AS7262_B_HIGH = const(0x0A)
@@ -70,7 +70,7 @@ _AS7262_Y_CAL = const(0x20)
 _AS7262_O_CAL = const(0x24)
 _AS7262_R_CAL = const(0x28)
 
-#hardware registers
+# hardware registers
 _AS726X_SLAVE_STATUS_REG = const(0x00)
 _AS726X_SLAVE_WRITE_REG = const(0x01)
 _AS726X_SLAVE_READ_REG = const(0x02)
@@ -92,9 +92,9 @@ _AS7262_RED_CALIBRATED = const(0x28)
 
 _AS726X_NUM_CHANNELS = const(6)
 
-#pylint: disable=too-many-instance-attributes
-#pylint: disable=too-many-public-methods
-class Adafruit_AS726x(object):
+# pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-public-methods
+class Adafruit_AS726x():
     """AS726x spectral sensor.
 
        :param ~busio.I2C i2c_bus: The I2C bus connected to the sensor
@@ -108,7 +108,7 @@ class Adafruit_AS726x(object):
     """Continuously gather samples of green, yellow, orange and red. Violet and blue are skipped
        and read zero."""
 
-    MODE_2 = 0b10 #default
+    MODE_2 = 0b10  # default
     """Continuously gather samples of all colors"""
 
     ONE_SHOT = 0b11
@@ -132,18 +132,20 @@ class Adafruit_AS726x(object):
 
         self.i2c_device = I2CDevice(i2c_bus, _AS726X_ADDRESS)
 
-        #reset device
+        # reset device
         self._virtual_write(_AS726X_CONTROL_SETUP, 0x80)
 
-        #wait for it to boot up
+        # wait for it to boot up
         time.sleep(1)
 
-        #try to read the version reg to make sure we can connect
+        # try to read the version reg to make sure we can connect
         version = self._virtual_read(_AS726X_HW_VERSION)
 
-        #TODO: add support for other devices
+        # TODO: add support for other devices
         if version != 0x40:
-            raise ValueError("device could not be reached or this device is not supported!")
+            raise ValueError(
+                "device could not be reached or this device is not supported!"
+            )
 
         self.integration_time = 140
         self.conversion_mode = Adafruit_AS726x.MODE_2
@@ -258,7 +260,7 @@ class Adafruit_AS726x(object):
         self._gain = val
         state = self._virtual_read(_AS726X_CONTROL_SETUP)
         state &= ~(0x3 << 4)
-        state |= (Adafruit_AS726x.GAIN.index(val) << 4)
+        state |= Adafruit_AS726x.GAIN.index(val) << 4
         self._virtual_write(_AS726X_CONTROL_SETUP, state)
 
     @property
@@ -274,7 +276,7 @@ class Adafruit_AS726x(object):
         if self._integration_time == val:
             return
         self._integration_time = val
-        self._virtual_write(_AS726X_INT_T, int(val/2.8))
+        self._virtual_write(_AS726X_INT_T, int(val / 2.8))
 
     def start_measurement(self):
         """Begin a measurement.
@@ -298,7 +300,7 @@ class Adafruit_AS726x(object):
         val[1] = self._virtual_read(channel + 1)
         val[2] = self._virtual_read(channel + 2)
         val[3] = self._virtual_read(channel + 3)
-        return struct.unpack('!f', val)[0]
+        return struct.unpack("!f", val)[0]
 
     @property
     def data_ready(self):
@@ -413,18 +415,18 @@ class Adafruit_AS726x(object):
             # Read slave I2C status to see if the write buffer is ready.
             status = self._read_u8(_AS726X_SLAVE_STATUS_REG)
             if (status & _AS726X_SLAVE_TX_VALID) == 0:
-                break # No inbound TX pending at slave. Okay to write now.
+                break  # No inbound TX pending at slave. Okay to write now.
         # Send the virtual register address (setting bit 7 to indicate a pending write).
         self.__write_u8(_AS726X_SLAVE_WRITE_REG, (addr | 0x80))
         while True:
             # Read the slave I2C status to see if the write buffer is ready.
             status = self._read_u8(_AS726X_SLAVE_STATUS_REG)
             if (status & _AS726X_SLAVE_TX_VALID) == 0:
-                break # No inbound TX pending at slave. Okay to write data now.
+                break  # No inbound TX pending at slave. Okay to write data now.
 
         # Send the data to complete the operation.
         self.__write_u8(_AS726X_SLAVE_WRITE_REG, value)
 
 
-#pylint: enable=too-many-instance-attributes
-#pylint: enable=too-many-public-methods
+# pylint: enable=too-many-instance-attributes
+# pylint: enable=too-many-public-methods
