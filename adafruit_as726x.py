@@ -94,7 +94,7 @@ _AS726X_NUM_CHANNELS = const(6)
 
 # pylint: disable=too-many-instance-attributes
 # pylint: disable=too-many-public-methods
-class Adafruit_AS726x():
+class Adafruit_AS726x:
     """AS726x spectral sensor.
 
        :param ~busio.I2C i2c_bus: The I2C bus connected to the sensor
