@@ -493,6 +493,7 @@ class AS726x_UART(AS726x):
         return None
 
     def _virtual_read(self, addr):
+        # pylint: disable=inconsistent-return-statements
         if addr == _AS726X_HW_VERSION:
             # just return what is expected
             return 0x40
