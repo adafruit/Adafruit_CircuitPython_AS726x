@@ -3,7 +3,10 @@ import time
 import board
 import busio
 
-from adafruit_as726x import Adafruit_AS726x
+# for I2C use:
+from adafruit_as726x import AS726x_I2C
+# for UART use:
+#from adafruit_as726x import AS726x_UART
 
 # maximum value for sensor reading
 max_val = 16000
@@ -16,9 +19,13 @@ def graph_map(x):
     return min(int(x * max_graph / max_val), max_graph)
 
 
-# Initialize I2C bus and sensor.
+# for I2C use:
 i2c = busio.I2C(board.SCL, board.SDA)
-sensor = Adafruit_AS726x(i2c)
+sensor = AS726x_I2C(i2c)
+
+# for UART use:
+#uart = busio.UART(board.TX, board.RX)
+#sensor = AS726x_UART(uart)
 
 sensor.conversion_mode = sensor.MODE_2
 

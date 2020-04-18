@@ -101,10 +101,9 @@ _COLOR_REGS_CALIBRATED = (_AS7262_VIOLET_CALIBRATED, _AS7262_BLUE_CALIBRATED,
 # pylint: disable=too-many-instance-attributes
 # pylint: disable=too-many-public-methods
 
-class Adafruit_AS726x:
-    """AS726x spectral sensor.
+class AS726x:
+    """AS726x spectral sensor base class.
 
-       :param ~busio.I2C i2c_bus: The I2C bus connected to the sensor
        """
 
     MODE_0 = 0b00
@@ -130,11 +129,11 @@ class Adafruit_AS726x:
     def __init__(self):
         self._driver_led = False
         self._indicator_led = False
-        self._driver_led_current = Adafruit_AS726x.DRIVER_CURRENT_LIMITS.index(12.5)
-        self._indicator_led_current = Adafruit_AS726x.INDICATOR_CURRENT_LIMITS.index(1)
-        self._conversion_mode = Adafruit_AS726x.MODE_2
+        self._driver_led_current = AS726x.DRIVER_CURRENT_LIMITS.index(12.5)
+        self._indicator_led_current = AS726x.INDICATOR_CURRENT_LIMITS.index(1)
+        self._conversion_mode = AS726x.MODE_2
         self._integration_time = 0
-        self._gain = Adafruit_AS726x.GAIN.index(1)
+        self._gain = AS726x.GAIN.index(1)
         self.buf2 = bytearray(2)
 
         # reset device
@@ -153,7 +152,7 @@ class Adafruit_AS726x:
             )
 
         self.integration_time = 140
-        self.conversion_mode = Adafruit_AS726x.MODE_2
+        self.conversion_mode = AS726x.MODE_2
         self.gain = 64
 
     @property
@@ -198,14 +197,14 @@ class Adafruit_AS726x:
 
     @driver_led_current.setter
     def driver_led_current(self, val):
-        if val not in Adafruit_AS726x.DRIVER_CURRENT_LIMITS:
+        if val not in AS726x.DRIVER_CURRENT_LIMITS:
             raise ValueError("Must be 12.5, 25, 50 or 100")
         if self._driver_led_current == val:
             return
         self._driver_led_current = val
         state = self._virtual_read(_AS726X_LED_CONTROL)
         state &= ~(0x3 << 4)
-        state = state | (Adafruit_AS726x.DRIVER_CURRENT_LIMITS.index(val) << 4)
+        state = state | (AS726x.DRIVER_CURRENT_LIMITS.index(val) << 4)
         self._virtual_write(_AS726X_LED_CONTROL, state)
 
     @property
@@ -220,14 +219,14 @@ class Adafruit_AS726x:
 
     @indicator_led_current.setter
     def indicator_led_current(self, val):
-        if val not in Adafruit_AS726x.INDICATOR_CURRENT_LIMITS:
+        if val not in AS726x.INDICATOR_CURRENT_LIMITS:
             raise ValueError("Must be 1, 2, 4 or 8")
         if self._indicator_led_current == val:
             return
         self._indicator_led_current = val
         state = self._virtual_read(_AS726X_LED_CONTROL)
         state &= ~(0x3 << 1)
-        state = state | (Adafruit_AS726x.INDICATOR_CURRENT_LIMITS.index(val) << 4)
+        state = state | (AS726x.INDICATOR_CURRENT_LIMITS.index(val) << 4)
         self._virtual_write(_AS726X_LED_CONTROL, state)
 
     @property
@@ -258,14 +257,14 @@ class Adafruit_AS726x:
 
     @gain.setter
     def gain(self, val):
-        if val not in Adafruit_AS726x.GAIN:
+        if val not in AS726x.GAIN:
             raise ValueError("Must be 1, 3.7, 16 or 64")
         if self._gain == val:
             return
         self._gain = val
         state = self._virtual_read(_AS726X_CONTROL_SETUP)
         state &= ~(0x3 << 4)
-        state |= Adafruit_AS726x.GAIN.index(val) << 4
+        state |= AS726x.GAIN.index(val) << 4
         self._virtual_write(_AS726X_CONTROL_SETUP, state)
 
     @property
@@ -383,7 +382,11 @@ class Adafruit_AS726x:
     def _virtual_write(self, addr, value):
         raise NotImplementedError("Must be implemented.")
 
-class Adafruit_AS726x_I2C(Adafruit_AS726x):
+class AS726x_I2C(AS726x):
+    """AS726x spectral sensor via I2C.
+
+       :param ~busio.I2C i2c_bus: The I2C bus connected to the sensor
+       """
 
     def __init__(self, i2c_bus, address=_AS726X_ADDRESS):
         self.i2c_device = I2CDevice(i2c_bus, address)
@@ -444,7 +447,12 @@ class Adafruit_AS726x_I2C(Adafruit_AS726x):
         # Send the data to complete the operation.
         self.__write_u8(_AS726X_SLAVE_WRITE_REG, value)
 
-class Adafruit_AS726x_UART(Adafruit_AS726x):
+class AS726x_UART(AS726x):
+    """AS726x spectral sensor via UART.
+
+       :param ~busio.UART uart: The UART connected to the sensor
+       """
+
     def __init__(self, uart):
         self._uart = uart
         self._uart.baudrate = 115200
@@ -471,6 +479,7 @@ class Adafruit_AS726x_UART(Adafruit_AS726x):
 
     def _virtual_read(self, addr):
         if addr == _AS726X_HW_VERSION:
+            # just return what is expected
             return 0x40
         elif addr == _AS726X_DEVICE_TEMP:
             return int(self._uart_xfer('ATTEMP'))
@@ -493,12 +502,13 @@ class Adafruit_AS726x_UART(Adafruit_AS726x):
 
     def _virtual_write(self, addr, value):
         if addr == _AS726X_CONTROL_SETUP:
-            RST  = (value >> 7) & 0x01
-            GAIN = (value >> 4) & 0x03
-            BANK = (value >> 2) & 0x03
-            if RST:
+            # check for reset
+            if (value >> 7) & 0x01:
                 self._uart.write(b'ATRST\n')
                 return
+            # otherwise proceed
+            GAIN = (value >> 4) & 0x03
+            BANK = (value >> 2) & 0x03
             self._uart_xfer('ATGAIN={}'.format(GAIN))
             self._uart_xfer('ATTCSMD={}'.format(BANK))
         elif addr == _AS726X_LED_CONTROL:
