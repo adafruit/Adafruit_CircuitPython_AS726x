@@ -113,6 +113,7 @@ _COLOR_REGS_CALIBRATED = (
 # pylint: disable=too-many-public-methods
 # pylint: disable=invalid-name
 # pylint: disable=no-else-return
+# pylint: disable=inconsistent-return-statements
 
 
 class AS726x:
@@ -493,7 +494,6 @@ class AS726x_UART(AS726x):
         return None
 
     def _virtual_read(self, addr):
-        # pylint: disable=inconsistent-return-statements
         if addr == _AS726X_HW_VERSION:
             # just return what is expected
             return 0x40
@@ -544,3 +544,4 @@ class AS726x_UART(AS726x):
 # pylint: enable=too-many-public-methods
 # pylint: enable=invalid-name
 # pylint: enable=no-else-return
+# pylint: enable=inconsistent-return-statements
