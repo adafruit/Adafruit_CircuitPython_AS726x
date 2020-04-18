@@ -114,6 +114,7 @@ _COLOR_REGS_CALIBRATED = (
 # pylint: disable=invalid-name
 # pylint: disable=no-else-return
 
+
 class AS726x:
     """AS726x spectral sensor base class.
 
