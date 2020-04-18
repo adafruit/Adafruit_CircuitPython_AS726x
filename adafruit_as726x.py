@@ -92,8 +92,15 @@ _AS7262_RED_CALIBRATED = const(0x28)
 
 _AS726X_NUM_CHANNELS = const(6)
 
+_COLOR_REGS = (_AS7262_VIOLET, _AS7262_BLUE, _AS7262_GREEN,
+               _AS7262_YELLOW, _AS7262_ORANGE,_AS7262_RED)
+_COLOR_REGS_CALIBRATED = (_AS7262_VIOLET_CALIBRATED, _AS7262_BLUE_CALIBRATED,
+                          _AS7262_GREEN_CALIBRATED, _AS7262_YELLOW_CALIBRATED,
+                          _AS7262_ORANGE_CALIBRATED, _AS7262_RED_CALIBRATED)
+
 # pylint: disable=too-many-instance-attributes
 # pylint: disable=too-many-public-methods
+
 class Adafruit_AS726x:
     """AS726x spectral sensor.
 
@@ -120,7 +127,7 @@ class Adafruit_AS726x:
 
     DRIVER_CURRENT_LIMITS = (12.5, 25, 50, 100)
 
-    def __init__(self, i2c_bus):
+    def __init__(self):
         self._driver_led = False
         self._indicator_led = False
         self._driver_led_current = Adafruit_AS726x.DRIVER_CURRENT_LIMITS.index(12.5)
@@ -129,8 +136,6 @@ class Adafruit_AS726x:
         self._integration_time = 0
         self._gain = Adafruit_AS726x.GAIN.index(1)
         self.buf2 = bytearray(2)
-
-        self.i2c_device = I2CDevice(i2c_bus, _AS726X_ADDRESS)
 
         # reset device
         self._virtual_write(_AS726X_CONTROL_SETUP, 0x80)
@@ -372,6 +377,18 @@ class Adafruit_AS726x:
         """Raw red (650nm) 16-bit value"""
         return self.read_channel(_AS7262_RED)
 
+    def _virtual_read(self, addr):
+        raise NotImplementedError("Must be implemented.")
+
+    def _virtual_write(self, addr, value):
+        raise NotImplementedError("Must be implemented.")
+
+class Adafruit_AS726x_I2C(Adafruit_AS726x):
+
+    def __init__(self, i2c_bus, address=_AS726X_ADDRESS):
+        self.i2c_device = I2CDevice(i2c_bus, address)
+        super().__init__()
+
     def _read_u8(self, command):
         """read a single byte from a specified register"""
         buf = self.buf2
@@ -427,6 +444,74 @@ class Adafruit_AS726x:
         # Send the data to complete the operation.
         self.__write_u8(_AS726X_SLAVE_WRITE_REG, value)
 
+class Adafruit_AS726x_UART(Adafruit_AS726x):
+    def __init__(self, uart):
+        self._uart = uart
+        self._uart.baudrate = 115200
+        super().__init__()
+
+    def read_channel(self, channel):
+        """Read an individual sensor channel"""
+        return self._virtual_read(channel)
+
+    def read_calibrated_value(self, channel):
+        """Read a calibrated sensor channel"""
+        return self._virtual_read(channel)
+
+    def _uart_xfer(self, cmd):
+        self._uart.reset_input_buffer()
+        cmd += '\n'
+        self._uart.write(cmd.encode())
+        time.sleep(0.1)
+        if self._uart.in_waiting:
+            resp = self._uart.read(self._uart.in_waiting)
+            return resp.rstrip(b' OK\n')
+        else:
+            return None
+
+    def _virtual_read(self, addr):
+        if addr == _AS726X_HW_VERSION:
+            return 0x40
+        elif addr == _AS726X_DEVICE_TEMP:
+            return int(self._uart_xfer('ATTEMP'))
+        elif addr == _AS726X_LED_CONTROL:
+            LED_IND = int(self._uart_xfer('ATLED0'))
+            LED_DRV = int(self._uart_xfer('ATLED1'))
+            return LED_IND << 3 | LED_DRV
+        elif addr == _AS726X_CONTROL_SETUP:
+            GAIN = int(self._uart_xfer('ATGAIN'))
+            BANK = int(self._uart_xfer('ATTCSMD'))
+            return GAIN << 4 | BANK << 2 | 1 << 1
+        elif addr in _COLOR_REGS:
+            resp = self._uart_xfer('ATDATA')
+            resp = resp.decode().split(',')
+            return int(resp[_COLOR_REGS.index(addr)])
+        elif addr in _COLOR_REGS_CALIBRATED:
+            resp = self._uart_xfer('ATCDATA')
+            resp = resp.decode().split(',')
+            return float(resp[_COLOR_REGS_CALIBRATED.index(addr)])
+
+    def _virtual_write(self, addr, value):
+        if addr == _AS726X_CONTROL_SETUP:
+            RST  = (value >> 7) & 0x01
+            GAIN = (value >> 4) & 0x03
+            BANK = (value >> 2) & 0x03
+            if RST:
+                self._uart.write(b'ATRST\n')
+                return
+            self._uart_xfer('ATGAIN={}'.format(GAIN))
+            self._uart_xfer('ATTCSMD={}'.format(BANK))
+        elif addr == _AS726X_LED_CONTROL:
+            ICL_DRV = (value >> 4) & 0x07
+            LED_DRV = 100 if value & 0x08 else 0
+            ICL_IND = (value >> 1) & 0x07
+            LED_IND = 100 if value & 0x01 else 0
+            self._uart_xfer('ATLED0={}'.format(LED_IND))
+            self._uart_xfer('ATLED1={}'.format(LED_DRV))
+            self._uart_xfer('ATLEDC={}'.format(ICL_DRV << 4 | ICL_IND))
+        elif addr == _AS726X_INT_T:
+            value = int(value / 2.8)
+            self._uart_xfer('ATINTTIME={}'.format(value))
 
 # pylint: enable=too-many-instance-attributes
 # pylint: enable=too-many-public-methods
