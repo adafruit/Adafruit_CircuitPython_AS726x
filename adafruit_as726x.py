@@ -111,7 +111,8 @@ _COLOR_REGS_CALIBRATED = (
 
 # pylint: disable=too-many-instance-attributes
 # pylint: disable=too-many-public-methods
-
+# pylint: disable=invalid-name
+# pylint: disable=no-else-return
 
 class AS726x:
     """AS726x spectral sensor base class.
@@ -488,8 +489,7 @@ class AS726x_UART(AS726x):
         if self._uart.in_waiting:
             resp = self._uart.read(self._uart.in_waiting)
             return resp.rstrip(b" OK\n")
-        else:
-            return None
+        return None
 
     def _virtual_read(self, addr):
         if addr == _AS726X_HW_VERSION:
@@ -540,3 +540,5 @@ class AS726x_UART(AS726x):
 
 # pylint: enable=too-many-instance-attributes
 # pylint: enable=too-many-public-methods
+# pylint: enable=invalid-name
+# pylint: enable=no-else-return
