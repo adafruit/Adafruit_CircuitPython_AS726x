@@ -117,9 +117,7 @@ _COLOR_REGS_CALIBRATED = (
 
 
 class AS726x:
-    """AS726x spectral sensor base class.
-
-       """
+    """AS726x spectral sensor base class."""
 
     MODE_0 = 0b00
     """Continuously gather samples of violet, blue, green and yellow. Orange and red are skipped
@@ -204,10 +202,10 @@ class AS726x:
     def driver_led_current(self):
         """The current limit for the driver LED in milliamps. One of:
 
-           - 12.5 mA
-           - 25 mA
-           - 50 mA
-           - 100 mA"""
+        - 12.5 mA
+        - 25 mA
+        - 50 mA
+        - 100 mA"""
         return self._driver_led_current
 
     @driver_led_current.setter
@@ -226,10 +224,10 @@ class AS726x:
     def indicator_led_current(self):
         """The current limit for the indicator LED in milliamps. One of:
 
-           - 1 mA
-           - 2 mA
-           - 4 mA
-           - 8 mA"""
+        - 1 mA
+        - 2 mA
+        - 4 mA
+        - 8 mA"""
         return self._indicator_led_current
 
     @indicator_led_current.setter
@@ -248,10 +246,10 @@ class AS726x:
     def conversion_mode(self):
         """The conversion mode. One of:
 
-           - `MODE_0`
-           - `MODE_1`
-           - `MODE_2`
-           - `ONE_SHOT`"""
+        - `MODE_0`
+        - `MODE_1`
+        - `MODE_2`
+        - `ONE_SHOT`"""
         return self._conversion_mode
 
     @conversion_mode.setter
@@ -300,8 +298,8 @@ class AS726x:
     def start_measurement(self):
         """Begin a measurement.
 
-           This will set the device to One Shot mode and values will not change after `data_ready`
-           until `start_measurement` is called again or the `conversion_mode` is changed."""
+        This will set the device to One Shot mode and values will not change after `data_ready`
+        until `start_measurement` is called again or the `conversion_mode` is changed."""
         state = self._virtual_read(_AS726X_CONTROL_SETUP)
         state &= ~(0x02)
         self._virtual_write(_AS726X_CONTROL_SETUP, state)
@@ -401,8 +399,8 @@ class AS726x:
 class AS726x_I2C(AS726x):
     """AS726x spectral sensor via I2C.
 
-       :param ~busio.I2C i2c_bus: The I2C bus connected to the sensor
-       """
+    :param ~busio.I2C i2c_bus: The I2C bus connected to the sensor
+    """
 
     def __init__(self, i2c_bus, address=_AS726X_ADDRESS):
         self.i2c_device = I2CDevice(i2c_bus, address)
@@ -467,8 +465,8 @@ class AS726x_I2C(AS726x):
 class AS726x_UART(AS726x):
     """AS726x spectral sensor via UART.
 
-       :param ~busio.UART uart: The UART connected to the sensor
-       """
+    :param ~busio.UART uart: The UART connected to the sensor
+    """
 
     def __init__(self, uart):
         self._uart = uart
