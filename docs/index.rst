@@ -23,8 +23,12 @@ Table of Contents
 .. toctree::
     :caption: Tutorials
 
+    Adafruit AS7262 6-Channel Visible Light / Color Sensor Breakout Learning Guide <https://learn.adafruit.com/adafruit-as7262-6-channel-visible-light-sensor>
+
 .. toctree::
     :caption: Related Products
+
+    Adafruit AS7262 6-Channel Visible Light / Color Sensor Breakout <https://www.adafruit.com/product/3779>
 
 .. toctree::
     :caption: Other Links

@@ -2,9 +2,7 @@
 # SPDX-License-Identifier: MIT
 
 import time
-
 import board
-import busio
 
 # for I2C use:
 from adafruit_as726x import AS726x_I2C
@@ -24,11 +22,11 @@ def graph_map(x):
 
 
 # for I2C use:
-i2c = busio.I2C(board.SCL, board.SDA)
+i2c = board.I2C()
 sensor = AS726x_I2C(i2c)
 
 # for UART use:
-# uart = busio.UART(board.TX, board.RX)
+# uart = board.UART()
 # sensor = AS726x_UART(uart)
 
 sensor.conversion_mode = sensor.MODE_2
