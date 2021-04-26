@@ -9,6 +9,22 @@
 Driver for the AS726x spectral sensors
 
 * Author(s): Dean Miller
+
+Implementation Notes
+--------------------
+
+**Hardware:**
+
+* Adafruit `AS7262 6-Channel Visible Light / Color Sensor Breakout
+  <https://www.adafruit.com/product/3779>`_ (Product ID: 3779)
+
+**Software and Dependencies:**
+
+* Adafruit CircuitPython firmware for the supported boards:
+  https://circuitpython.org/downloads
+
+* Adafruit's Bus Device library: https://github.com/adafruit/Adafruit_CircuitPython_BusDevice
+
 """
 
 import time
@@ -281,8 +297,10 @@ class AS726x:
     def start_measurement(self):
         """Begin a measurement.
 
-        This will set the device to One Shot mode and values will not change after `data_ready`
-        until `start_measurement` is called again or the `conversion_mode` is changed."""
+        This will set the device to One Shot mode and values will
+        not change after `data_ready` until :meth:`start_measurement`
+        is called again or the :meth:`conversion_mode` is changed.
+        """
         state = self._virtual_read(_AS726X_CONTROL_SETUP)
         state &= ~(0x02)
         self._virtual_write(_AS726X_CONTROL_SETUP, state)
@@ -382,7 +400,39 @@ class AS726x:
 class AS726x_I2C(AS726x):
     """AS726x spectral sensor via I2C.
 
-    :param ~busio.I2C i2c_bus: The I2C bus connected to the sensor
+    :param ~busio.I2C i2c_bus: The I2C bus the AS726x is connected to
+    :param int address: The I2C device address. Defaults to :const:`0x49`
+
+
+    **Quickstart: Importing and using the AS726x**
+
+        Here is an example of using the :class:`AS726x_I2C` class.
+        First you will need to import the libraries to use the sensor
+
+        .. code-block:: python
+
+            import board
+            from adafruit_as726x import AS726x_I2C
+
+        Once this is done you can define your `board.I2C` object and define your sensor object
+
+        .. code-block:: python
+
+            i2c = board.I2C()  # uses board.SCL and board.SDA
+            sensor = AS726x_I2C(i2c)
+
+        Now you have access to the different color attributes
+
+        .. code-block:: python
+
+            violet = sensor.violet
+            blue = sensor.blue
+            green = sensor.green
+            yellow = sensor.yellow
+            orange = sensor.orange
+            red = sensor.red
+
+
     """
 
     def __init__(self, i2c_bus, address=_AS726X_ADDRESS):
@@ -449,6 +499,37 @@ class AS726x_UART(AS726x):
     """AS726x spectral sensor via UART.
 
     :param ~busio.UART uart: The UART connected to the sensor
+
+
+    **Quickstart: Importing and using the AS726x**
+
+        Here is an example of using the :class:`AS726x_I2C` class.
+        First you will need to import the libraries to use the sensor
+
+        .. code-block:: python
+
+            import board
+            from adafruit_as726x import AS726x_UART
+
+        Once this is done you can define your `board.UART` object and define your sensor object
+
+        .. code-block:: python
+
+            uart = board.UART()  # uses board.SCL and board.SDA
+            sensor = AS726x_UART(uart)
+
+        Now you have access to the different color attributes
+
+        .. code-block:: python
+
+            violet = sensor.violet
+            blue = sensor.blue
+            green = sensor.green
+            yellow = sensor.yellow
+            orange = sensor.orange
+            red = sensor.red
+
+
     """
 
     def __init__(self, uart):
