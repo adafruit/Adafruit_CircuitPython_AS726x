@@ -26,15 +26,10 @@ Implementation Notes
 * Adafruit's Bus Device library: https://github.com/adafruit/Adafruit_CircuitPython_BusDevice
 
 """
-
+import struct
 import time
 from adafruit_bus_device.i2c_device import I2CDevice
 from micropython import const
-
-try:
-    import struct
-except ImportError:
-    import ustruct as struct
 
 __version__ = "0.0.0-auto.0"
 __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_AS726x.git"
