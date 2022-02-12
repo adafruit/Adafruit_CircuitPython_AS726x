@@ -30,10 +30,12 @@ import struct
 import time
 from adafruit_bus_device.i2c_device import I2CDevice
 from micropython import const
-import busio
 
 try:
     from typing import Tuple
+
+    # This is only needed for typing
+    import busio  # pylint: disable=unused-import
 except ImportError:
     pass
 
