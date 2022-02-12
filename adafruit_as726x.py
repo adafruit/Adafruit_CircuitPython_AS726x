@@ -32,7 +32,7 @@ from adafruit_bus_device.i2c_device import I2CDevice
 from micropython import const
 
 try:
-    from typing import Tuple
+    from typing import Tuple, Optional, Union
 
     # This is only needed for typing
     import busio  # pylint: disable=unused-import
@@ -267,12 +267,12 @@ class AS726x:
         self._virtual_write(_AS726X_CONTROL_SETUP, state | (val << 2))
 
     @property
-    def gain(self) -> int:
+    def gain(self) -> float:
         """The gain for the sensor"""
         return self._gain
 
     @gain.setter
-    def gain(self, val: int) -> None:
+    def gain(self, val: float) -> None:
         if val not in AS726x.GAIN:
             raise ValueError("Must be 1, 3.7, 16 or 64")
         if self._gain == val:
@@ -394,10 +394,10 @@ class AS726x:
         """Raw red (650nm) 16-bit value"""
         return self.read_channel(_AS7262_RED)
 
-    def _virtual_read(self, addr: int) -> int:
+    def _virtual_read(self, addr: int) -> Union[int, float]:
         raise NotImplementedError("Must be implemented.")
 
-    def _virtual_write(self, addr: int, value: int) -> None:
+    def _virtual_write(self, addr: int, value: Union[int, float]) -> None:
         raise NotImplementedError("Must be implemented.")
 
 
@@ -439,7 +439,7 @@ class AS726x_I2C(AS726x):
 
     """
 
-    def __init__(self, i2c_bus: busio.I2C, address: int = _AS726X_ADDRESS):
+    def __init__(self, i2c_bus: busio.I2C, address: int = _AS726X_ADDRESS) -> None:
         self.i2c_device = I2CDevice(i2c_bus, address)
         super().__init__()
 
@@ -460,7 +460,7 @@ class AS726x_I2C(AS726x):
         with self.i2c_device as i2c:
             i2c.write(buf)
 
-    def _virtual_read(self, addr: int) -> int:
+    def _virtual_read(self, addr: int) -> Union[int, float]:
         """read a virtual register"""
         while True:
             # Read slave I2C status to see if the read buffer is ready.
@@ -480,7 +480,7 @@ class AS726x_I2C(AS726x):
         data = self._read_u8(_AS726X_SLAVE_READ_REG)
         return data
 
-    def _virtual_write(self, addr: int, value: int) -> None:
+    def _virtual_write(self, addr: int, value: Union[int, float]) -> None:
         """write a virtual register"""
         while True:
             # Read slave I2C status to see if the write buffer is ready.
@@ -536,12 +536,12 @@ class AS726x_UART(AS726x):
 
     """
 
-    def __init__(self, uart: busio.UART):
+    def __init__(self, uart: busio.UART) -> None:
         self._uart = uart
         self._uart.baudrate = 115200
         super().__init__()
 
-    def read_channel(self, channel: int) -> int:
+    def read_channel(self, channel: int) -> float:
         """Read an individual sensor channel"""
         return self._virtual_read(channel)
 
@@ -549,7 +549,7 @@ class AS726x_UART(AS726x):
         """Read a calibrated sensor channel"""
         return self._virtual_read(channel)
 
-    def _uart_xfer(self, cmd: int) -> int:
+    def _uart_xfer(self, cmd: Optional[str]) -> str:
         self._uart.reset_input_buffer()
         cmd += "\n"
         self._uart.write(cmd.encode())
@@ -559,7 +559,7 @@ class AS726x_UART(AS726x):
             return resp.rstrip(b" OK\n")
         return None
 
-    def _virtual_read(self, addr: int) -> int:
+    def _virtual_read(self, addr: int) -> Union[int, float]:
         if addr == _AS726X_HW_VERSION:
             # just return what is expected
             return 0x40
@@ -582,7 +582,7 @@ class AS726x_UART(AS726x):
             resp = resp.decode().split(",")
             return float(resp[_COLOR_REGS_CALIBRATED.index(addr)])
 
-    def _virtual_write(self, addr: int, value: int) -> None:
+    def _virtual_write(self, addr: int, value: Union[int, float]) -> None:
         if addr == _AS726X_CONTROL_SETUP:
             # check for reset
             if (value >> 7) & 0x01:
