@@ -31,62 +31,71 @@ import time
 from adafruit_bus_device.i2c_device import I2CDevice
 from micropython import const
 
-__version__ = "0.0.0-auto.0"
-__repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_AS726x.git"
+try:
+    from typing import Tuple, Optional
 
-_AS726X_ADDRESS = const(0x49)
+    # This is only needed for typing
+    import busio  # pylint: disable=unused-import
+except ImportError:
+    pass
 
-_AS726X_HW_VERSION = const(0x00)
-_AS726X_FW_VERSION = const(0x02)
-_AS726X_CONTROL_SETUP = const(0x04)
-_AS726X_INT_T = const(0x05)
-_AS726X_DEVICE_TEMP = const(0x06)
-_AS726X_LED_CONTROL = const(0x07)
+
+__version__: str = "0.0.0-auto.0"
+__repo__: str = "https://github.com/adafruit/Adafruit_CircuitPython_AS726x.git"
+
+_AS726X_ADDRESS: int = const(0x49)
+
+_AS726X_HW_VERSION: int = const(0x00)
+_AS726X_FW_VERSION: int = const(0x02)
+_AS726X_CONTROL_SETUP: int = const(0x04)
+_AS726X_INT_T: int = const(0x05)
+_AS726X_DEVICE_TEMP: int = const(0x06)
+_AS726X_LED_CONTROL: int = const(0x07)
 
 # for reading sensor data
-_AS7262_V_HIGH = const(0x08)
-_AS7262_V_LOW = const(0x09)
-_AS7262_B_HIGH = const(0x0A)
-_AS7262_B_LOW = const(0x0B)
-_AS7262_G_HIGH = const(0x0C)
-_AS7262_G_LOW = const(0x0D)
-_AS7262_Y_HIGH = const(0x0E)
-_AS7262_Y_LOW = const(0x0F)
-_AS7262_O_HIGH = const(0x10)
-_AS7262_O_LOW = const(0x11)
-_AS7262_R_HIGH = const(0x12)
-_AS7262_R_LOW = const(0x13)
+_AS7262_V_HIGH: int = const(0x08)
+_AS7262_V_LOW: int = const(0x09)
+_AS7262_B_HIGH: int = const(0x0A)
+_AS7262_B_LOW: int = const(0x0B)
+_AS7262_G_HIGH: int = const(0x0C)
+_AS7262_G_LOW: int = const(0x0D)
+_AS7262_Y_HIGH: int = const(0x0E)
+_AS7262_Y_LOW: int = const(0x0F)
+_AS7262_O_HIGH: int = const(0x10)
+_AS7262_O_LOW: int = const(0x11)
+_AS7262_R_HIGH: int = const(0x12)
+_AS7262_R_LOW: int = const(0x13)
 
-_AS7262_V_CAL = const(0x14)
-_AS7262_B_CAL = const(0x18)
-_AS7262_G_CAL = const(0x1C)
-_AS7262_Y_CAL = const(0x20)
-_AS7262_O_CAL = const(0x24)
-_AS7262_R_CAL = const(0x28)
+_AS7262_V_CAL: int = const(0x14)
+_AS7262_B_CAL: int = const(0x18)
+_AS7262_G_CAL: int = const(0x1C)
+_AS7262_Y_CAL: int = const(0x20)
+_AS7262_O_CAL: int = const(0x24)
+_AS7262_R_CAL: int = const(0x28)
 
 # hardware registers
-_AS726X_SLAVE_STATUS_REG = const(0x00)
-_AS726X_SLAVE_WRITE_REG = const(0x01)
-_AS726X_SLAVE_READ_REG = const(0x02)
-_AS726X_SLAVE_TX_VALID = const(0x02)
-_AS726X_SLAVE_RX_VALID = const(0x01)
+_AS726X_SLAVE_STATUS_REG: int = const(0x00)
+_AS726X_SLAVE_WRITE_REG: int = const(0x01)
+_AS726X_SLAVE_READ_REG: int = const(0x02)
+_AS726X_SLAVE_TX_VALID: int = const(0x02)
+_AS726X_SLAVE_RX_VALID: int = const(0x01)
 
-_AS7262_VIOLET = const(0x08)
-_AS7262_BLUE = const(0x0A)
-_AS7262_GREEN = const(0x0C)
-_AS7262_YELLOW = const(0x0E)
-_AS7262_ORANGE = const(0x10)
-_AS7262_RED = const(0x12)
-_AS7262_VIOLET_CALIBRATED = const(0x14)
-_AS7262_BLUE_CALIBRATED = const(0x18)
-_AS7262_GREEN_CALIBRATED = const(0x1C)
+_AS7262_VIOLET: int = const(0x08)
+_AS7262_BLUE: int = const(0x0A)
+_AS7262_GREEN: int = const(0x0C)
+_AS7262_YELLOW: int = const(0x0E)
+_AS7262_ORANGE: int = const(0x10)
+_AS7262_RED: int = const(0x12)
+_AS7262_VIOLET_CALIBRATED: int = const(0x14)
+_AS7262_BLUE_CALIBRATED: int = const(0x18)
+_AS7262_GREEN_CALIBRATED: int = const(0x1C)
 _AS7262_YELLOW_CALIBRATED = const(0x20)
-_AS7262_ORANGE_CALIBRATED = const(0x24)
-_AS7262_RED_CALIBRATED = const(0x28)
+_AS7262_ORANGE_CALIBRATED: int = const(0x24)
+_AS7262_RED_CALIBRATED: int = const(0x28)
 
-_AS726X_NUM_CHANNELS = const(6)
+_AS726X_NUM_CHANNELS: int = const(6)
 
-_COLOR_REGS = (
+_COLOR_REGS: Tuple[int, ...] = (
     _AS7262_VIOLET,
     _AS7262_BLUE,
     _AS7262_GREEN,
@@ -94,7 +103,7 @@ _COLOR_REGS = (
     _AS7262_ORANGE,
     _AS7262_RED,
 )
-_COLOR_REGS_CALIBRATED = (
+_COLOR_REGS_CALIBRATED: Tuple[int, ...] = (
     _AS7262_VIOLET_CALIBRATED,
     _AS7262_BLUE_CALIBRATED,
     _AS7262_GREEN_CALIBRATED,
@@ -113,25 +122,25 @@ _COLOR_REGS_CALIBRATED = (
 class AS726x:
     """AS726x spectral sensor base class."""
 
-    MODE_0 = 0b00
+    MODE_0: int = 0b00
     """Continuously gather samples of violet, blue, green and yellow. Orange and red are skipped
        and read zero."""
 
-    MODE_1 = 0b01
+    MODE_1: int = 0b01
     """Continuously gather samples of green, yellow, orange and red. Violet and blue are skipped
        and read zero."""
 
-    MODE_2 = 0b10  # default
+    MODE_2: int = 0b10  # default
     """Continuously gather samples of all colors"""
 
-    ONE_SHOT = 0b11
+    ONE_SHOT: int = 0b11
     """Gather a single sample of all colors and then stop"""
 
-    GAIN = (1, 3.7, 16, 64)
+    GAIN: Tuple[float, ...] = (1, 3.7, 16, 64)
 
-    INDICATOR_CURRENT_LIMITS = (1, 2, 4, 8)
+    INDICATOR_CURRENT_LIMITS: Tuple[int, ...] = (1, 2, 4, 8)
 
-    DRIVER_CURRENT_LIMITS = (12.5, 25, 50, 100)
+    DRIVER_CURRENT_LIMITS: Tuple[float, ...] = (12.5, 25, 50, 100)
 
     def __init__(self):
         self._driver_led = False
@@ -163,12 +172,12 @@ class AS726x:
         self.gain = 64
 
     @property
-    def driver_led(self):
+    def driver_led(self) -> bool:
         """True when the driver LED is on. False otherwise."""
         return self._driver_led
 
     @driver_led.setter
-    def driver_led(self, val):
+    def driver_led(self, val: bool) -> None:
         val = bool(val)
         if self._driver_led == val:
             return
@@ -178,12 +187,12 @@ class AS726x:
         self._virtual_write(_AS726X_LED_CONTROL, enable | (val << 3))
 
     @property
-    def indicator_led(self):
+    def indicator_led(self) -> bool:
         """True when the indicator LED is on. False otherwise."""
         return self._indicator_led
 
     @indicator_led.setter
-    def indicator_led(self, val):
+    def indicator_led(self, val: bool) -> None:
         val = bool(val)
         if self._indicator_led == val:
             return
@@ -193,7 +202,7 @@ class AS726x:
         self._virtual_write(_AS726X_LED_CONTROL, enable | val)
 
     @property
-    def driver_led_current(self):
+    def driver_led_current(self) -> float:
         """The current limit for the driver LED in milliamps. One of:
 
         - 12.5 mA
@@ -203,7 +212,7 @@ class AS726x:
         return self._driver_led_current
 
     @driver_led_current.setter
-    def driver_led_current(self, val):
+    def driver_led_current(self, val: float) -> None:
         if val not in AS726x.DRIVER_CURRENT_LIMITS:
             raise ValueError("Must be 12.5, 25, 50 or 100")
         if self._driver_led_current == val:
@@ -215,7 +224,7 @@ class AS726x:
         self._virtual_write(_AS726X_LED_CONTROL, state)
 
     @property
-    def indicator_led_current(self):
+    def indicator_led_current(self) -> int:
         """The current limit for the indicator LED in milliamps. One of:
 
         - 1 mA
@@ -225,7 +234,7 @@ class AS726x:
         return self._indicator_led_current
 
     @indicator_led_current.setter
-    def indicator_led_current(self, val):
+    def indicator_led_current(self, val: int) -> None:
         if val not in AS726x.INDICATOR_CURRENT_LIMITS:
             raise ValueError("Must be 1, 2, 4 or 8")
         if self._indicator_led_current == val:
@@ -237,7 +246,7 @@ class AS726x:
         self._virtual_write(_AS726X_LED_CONTROL, state)
 
     @property
-    def conversion_mode(self):
+    def conversion_mode(self) -> int:
         """The conversion mode. One of:
 
         - `MODE_0`
@@ -247,7 +256,7 @@ class AS726x:
         return self._conversion_mode
 
     @conversion_mode.setter
-    def conversion_mode(self, val):
+    def conversion_mode(self, val: int) -> None:
         val = int(val)
         assert self.MODE_0 <= val <= self.ONE_SHOT
         if self._conversion_mode == val:
@@ -258,12 +267,12 @@ class AS726x:
         self._virtual_write(_AS726X_CONTROL_SETUP, state | (val << 2))
 
     @property
-    def gain(self):
+    def gain(self) -> float:
         """The gain for the sensor"""
         return self._gain
 
     @gain.setter
-    def gain(self, val):
+    def gain(self, val: float) -> None:
         if val not in AS726x.GAIN:
             raise ValueError("Must be 1, 3.7, 16 or 64")
         if self._gain == val:
@@ -275,12 +284,12 @@ class AS726x:
         self._virtual_write(_AS726X_CONTROL_SETUP, state)
 
     @property
-    def integration_time(self):
+    def integration_time(self) -> float:
         """The integration time in milliseconds between 2.8 and 714 ms"""
         return self._integration_time
 
     @integration_time.setter
-    def integration_time(self, val):
+    def integration_time(self, val: float) -> None:
         val = int(val)
         if not 2.8 <= val <= 714:
             raise ValueError("Out of supported range 2.8 - 714 ms")
@@ -289,7 +298,7 @@ class AS726x:
         self._integration_time = val
         self._virtual_write(_AS726X_INT_T, int(val / 2.8))
 
-    def start_measurement(self):
+    def start_measurement(self) -> None:
         """Begin a measurement.
 
         This will set the device to One Shot mode and values will
@@ -302,11 +311,11 @@ class AS726x:
 
         self.conversion_mode = self.ONE_SHOT
 
-    def read_channel(self, channel):
+    def read_channel(self, channel: int) -> int:
         """Read an individual sensor channel"""
         return (self._virtual_read(channel) << 8) | self._virtual_read(channel + 1)
 
-    def read_calibrated_value(self, channel):
+    def read_calibrated_value(self, channel: int) -> float:
         """Read a calibrated sensor channel"""
         val = bytearray(4)
         val[0] = self._virtual_read(channel)
@@ -316,79 +325,79 @@ class AS726x:
         return struct.unpack("!f", val)[0]
 
     @property
-    def data_ready(self):
+    def data_ready(self) -> bool:
         """True if the sensor has data ready to be read, False otherwise"""
         return (self._virtual_read(_AS726X_CONTROL_SETUP) >> 1) & 0x01
 
     @property
-    def temperature(self):
+    def temperature(self) -> int:
         """The temperature of the device in Celsius"""
         return self._virtual_read(_AS726X_DEVICE_TEMP)
 
     @property
-    def violet(self):
+    def violet(self) -> float:
         """Calibrated violet (450nm) value"""
         return self.read_calibrated_value(_AS7262_VIOLET_CALIBRATED)
 
     @property
-    def blue(self):
+    def blue(self) -> float:
         """Calibrated blue (500nm) value"""
         return self.read_calibrated_value(_AS7262_BLUE_CALIBRATED)
 
     @property
-    def green(self):
+    def green(self) -> float:
         """Calibrated green (550nm) value"""
         return self.read_calibrated_value(_AS7262_GREEN_CALIBRATED)
 
     @property
-    def yellow(self):
+    def yellow(self) -> float:
         """Calibrated yellow (570nm) value"""
         return self.read_calibrated_value(_AS7262_YELLOW_CALIBRATED)
 
     @property
-    def orange(self):
+    def orange(self) -> float:
         """Calibrated orange (600nm) value"""
         return self.read_calibrated_value(_AS7262_ORANGE_CALIBRATED)
 
     @property
-    def red(self):
+    def red(self) -> float:
         """Calibrated red (650nm) value"""
         return self.read_calibrated_value(_AS7262_RED_CALIBRATED)
 
     @property
-    def raw_violet(self):
+    def raw_violet(self) -> int:
         """Raw violet (450nm) 16-bit value"""
         return self.read_channel(_AS7262_VIOLET)
 
     @property
-    def raw_blue(self):
+    def raw_blue(self) -> int:
         """Raw blue (500nm) 16-bit value"""
         return self.read_channel(_AS7262_BLUE)
 
     @property
-    def raw_green(self):
+    def raw_green(self) -> int:
         """Raw green (550nm) 16-bit value"""
         return self.read_channel(_AS7262_GREEN)
 
     @property
-    def raw_yellow(self):
+    def raw_yellow(self) -> int:
         """Raw yellow (570nm) 16-bit value"""
         return self.read_channel(_AS7262_YELLOW)
 
     @property
-    def raw_orange(self):
+    def raw_orange(self) -> int:
         """Raw orange (600nm) 16-bit value"""
         return self.read_channel(_AS7262_ORANGE)
 
     @property
-    def raw_red(self):
+    def raw_red(self) -> int:
         """Raw red (650nm) 16-bit value"""
         return self.read_channel(_AS7262_RED)
 
-    def _virtual_read(self, addr):
+    def _virtual_read(self, addr: int) -> float:
         raise NotImplementedError("Must be implemented.")
 
-    def _virtual_write(self, addr, value):
+    def _virtual_write(self, addr: int, value: float) -> None:
         raise NotImplementedError("Must be implemented.")
 
 
@@ -430,11 +439,11 @@ class AS726x_I2C(AS726x):
 
     """
 
-    def __init__(self, i2c_bus, address=_AS726X_ADDRESS):
+    def __init__(self, i2c_bus: busio.I2C, address: int = _AS726X_ADDRESS) -> None:
         self.i2c_device = I2CDevice(i2c_bus, address)
         super().__init__()
 
-    def _read_u8(self, command):
+    def _read_u8(self, command: int) -> int:
         """read a single byte from a specified register"""
         buf = self.buf2
         buf[0] = command
@@ -443,7 +452,7 @@ class AS726x_I2C(AS726x):
             i2c.readinto(buf, end=1)
         return buf[0]
 
-    def __write_u8(self, command, abyte):
+    def __write_u8(self, command: int, abyte: int) -> None:
         """Write a command and 1 byte of data to the I2C device"""
         buf = self.buf2
         buf[0] = command
@@ -451,7 +460,7 @@ class AS726x_I2C(AS726x):
         with self.i2c_device as i2c:
             i2c.write(buf)
 
-    def _virtual_read(self, addr):
+    def _virtual_read(self, addr: int) -> float:
         """read a virtual register"""
         while True:
             # Read slave I2C status to see if the read buffer is ready.
@@ -471,7 +480,7 @@ class AS726x_I2C(AS726x):
         data = self._read_u8(_AS726X_SLAVE_READ_REG)
         return data
 
-    def _virtual_write(self, addr, value):
+    def _virtual_write(self, addr: int, value: float) -> None:
         """write a virtual register"""
         while True:
             # Read slave I2C status to see if the write buffer is ready.
@@ -527,20 +536,20 @@ class AS726x_UART(AS726x):
 
     """
 
-    def __init__(self, uart):
+    def __init__(self, uart: busio.UART) -> None:
         self._uart = uart
         self._uart.baudrate = 115200
         super().__init__()
 
-    def read_channel(self, channel):
+    def read_channel(self, channel: int) -> float:
         """Read an individual sensor channel"""
         return self._virtual_read(channel)
 
-    def read_calibrated_value(self, channel):
+    def read_calibrated_value(self, channel: int) -> float:
         """Read a calibrated sensor channel"""
         return self._virtual_read(channel)
 
-    def _uart_xfer(self, cmd):
+    def _uart_xfer(self, cmd: Optional[str]) -> str:
         self._uart.reset_input_buffer()
         cmd += "\n"
         self._uart.write(cmd.encode())
@@ -550,7 +559,7 @@ class AS726x_UART(AS726x):
             return resp.rstrip(b" OK\n")
         return None
 
-    def _virtual_read(self, addr):
+    def _virtual_read(self, addr: int) -> float:
         if addr == _AS726X_HW_VERSION:
             # just return what is expected
             return 0x40
@@ -573,7 +582,7 @@ class AS726x_UART(AS726x):
             resp = resp.decode().split(",")
             return float(resp[_COLOR_REGS_CALIBRATED.index(addr)])
 
-    def _virtual_write(self, addr, value):
+    def _virtual_write(self, addr: int, value: float) -> None:
         if addr == _AS726X_CONTROL_SETUP:
             # check for reset
             if (value >> 7) & 0x01:
