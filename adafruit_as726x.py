@@ -40,7 +40,7 @@ except ImportError:
     pass
 
 
-__version__: str = "0.0.0-auto.0"
+__version__: str = "0.0.0+auto.0"
 __repo__: str = "https://github.com/adafruit/Adafruit_CircuitPython_AS726x.git"
 
 _AS726X_ADDRESS: int = const(0x49)
