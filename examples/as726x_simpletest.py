@@ -22,7 +22,8 @@ def graph_map(x):
 
 
 # for I2C use:
-i2c = board.I2C()
+i2c = board.I2C()  # uses board.SCL and board.SDA
+# i2c = board.STEMMA_I2C()  # For using the built-in STEMMA QT connector on a microcontroller
 sensor = AS726x_I2C(i2c)
 
 # for UART use:
