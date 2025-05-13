@@ -26,16 +26,18 @@ Implementation Notes
 * Adafruit's Bus Device library: https://github.com/adafruit/Adafruit_CircuitPython_BusDevice
 
 """
+
 import struct
 import time
+
 from adafruit_bus_device.i2c_device import I2CDevice
 from micropython import const
 
 try:
-    from typing import Tuple, Optional
+    from typing import Optional, Tuple
 
     # This is only needed for typing
-    import busio  # pylint: disable=unused-import
+    import busio
 except ImportError:
     pass
 
@@ -112,12 +114,6 @@ _COLOR_REGS_CALIBRATED: Tuple[int, ...] = (
     _AS7262_RED_CALIBRATED,
 )
 
-# pylint: disable=too-many-instance-attributes
-# pylint: disable=too-many-public-methods
-# pylint: disable=invalid-name
-# pylint: disable=no-else-return
-# pylint: disable=inconsistent-return-statements
-
 
 class AS726x:
     """AS726x spectral sensor base class."""
@@ -163,9 +159,7 @@ class AS726x:
 
         # TODO: add support for other devices
         if version != 0x40:
-            raise ValueError(
-                "device could not be reached or this device is not supported!"
-            )
+            raise ValueError("device could not be reached or this device is not supported!")
 
         self.integration_time = 140
         self.conversion_mode = AS726x.MODE_2
@@ -591,23 +585,16 @@ class AS726x_UART(AS726x):
             # otherwise proceed
             GAIN = (value >> 4) & 0x03
             BANK = (value >> 2) & 0x03
-            self._uart_xfer("ATGAIN={}".format(GAIN))
-            self._uart_xfer("ATTCSMD={}".format(BANK))
+            self._uart_xfer(f"ATGAIN={GAIN}")
+            self._uart_xfer(f"ATTCSMD={BANK}")
         elif addr == _AS726X_LED_CONTROL:
             ICL_DRV = (value >> 4) & 0x07
             LED_DRV = 100 if value & 0x08 else 0
             ICL_IND = (value >> 1) & 0x07
             LED_IND = 100 if value & 0x01 else 0
-            self._uart_xfer("ATLED0={}".format(LED_IND))
-            self._uart_xfer("ATLED1={}".format(LED_DRV))
-            self._uart_xfer("ATLEDC={}".format(ICL_DRV << 4 | ICL_IND))
+            self._uart_xfer(f"ATLED0={LED_IND}")
+            self._uart_xfer(f"ATLED1={LED_DRV}")
+            self._uart_xfer(f"ATLEDC={ICL_DRV << 4 | ICL_IND}")
         elif addr == _AS726X_INT_T:
             value = int(value / 2.8)
-            self._uart_xfer("ATINTTIME={}".format(value))
-
-
-# pylint: enable=too-many-instance-attributes
-# pylint: enable=too-many-public-methods
-# pylint: enable=invalid-name
-# pylint: enable=no-else-return
-# pylint: enable=inconsistent-return-statements
+            self._uart_xfer(f"ATINTTIME={value}")
