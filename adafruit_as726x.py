@@ -214,7 +214,7 @@ class AS726x:
         self._driver_led_current = val
         state = self._virtual_read(_AS726X_LED_CONTROL)
         state &= ~(0x3 << 4)
-        state = state | (AS726x.DRIVER_CURRENT_LIMITS.index(val) << 4)
+        state |= AS726x.DRIVER_CURRENT_LIMITS.index(val) << 4
         self._virtual_write(_AS726X_LED_CONTROL, state)
 
     @property
@@ -236,7 +236,7 @@ class AS726x:
         self._indicator_led_current = val
         state = self._virtual_read(_AS726X_LED_CONTROL)
         state &= ~(0x3 << 1)
-        state = state | (AS726x.INDICATOR_CURRENT_LIMITS.index(val) << 4)
+        state |= AS726x.INDICATOR_CURRENT_LIMITS.index(val) << 4
         self._virtual_write(_AS726X_LED_CONTROL, state)
 
     @property
